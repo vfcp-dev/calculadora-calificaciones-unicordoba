@@ -163,7 +163,7 @@ class CalculadoraCalificaciones {
         }
 
         // Navegación de ayuda
-        document.querySelectorAll('.help-nav-btn').forEach(btn => {
+        document.querySelectorAll('.help-tab-btn').forEach(btn => {
             btn.addEventListener('click', () => this.cambiarSeccionAyuda(btn.dataset.section));
         });
 
@@ -238,7 +238,7 @@ class CalculadoraCalificaciones {
     cambiarSeccionAyuda(subseccion) {
         // Ocultar todas las subsecciones de ayuda
         document.querySelectorAll('.help-section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.help-nav-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.help-tab-btn').forEach(btn => btn.classList.remove('active'));
 
         // Mostrar subsección seleccionada
         document.getElementById(`help-${subseccion}`).classList.add('active');
@@ -335,7 +335,7 @@ class CalculadoraCalificaciones {
     // CÁLCULOS ACADÉMICOS
     // ==========================================
     calcularDefinitiva(estudiante) {
-        const { corte1, corte2, corte3 } = estudiante;
+        const { corte1, corte2, corte3, bonificacion } = estudiante;
         const { corte1: p1, corte2: p2, corte3: p3 } = this.porcentajes;
         
         let definitiva = 0;
@@ -352,6 +352,11 @@ class CalculadoraCalificaciones {
         if (corte3 !== null && corte3 !== undefined) {
             definitiva += (corte3 * p3) / 100;
             cortesCompletados++;
+        }
+        
+        // Agregar bonificación a la definitiva
+        if (bonificacion !== null && bonificacion !== undefined && bonificacion > 0) {
+            definitiva += parseFloat(bonificacion);
         }
 
         return { definitiva, cortesCompletados };
@@ -460,11 +465,10 @@ class CalculadoraCalificaciones {
                     <th>Código</th>
                     <th>Nombre</th>
                     <th>Correo</th>
-                    <th>Grupo</th>
                     <th>Corte 1 (33%)</th>
                     <th>Corte 2 (33%)</th>
                     <th>Corte 3 (34%)</th>
-                    <th>Bonificación</th>
+                    <th>+ Bonificación</th>
                     <th>Definitiva</th>
                     <th>Comentarios</th>
                     <th>Acciones</th>
@@ -473,11 +477,12 @@ class CalculadoraCalificaciones {
             <tbody>`;
         for (const estudiante of this.estudiantes) {
             const { definitiva } = this.calcularDefinitiva(estudiante);
+            const bonificacionNota = estudiante.bonificacion || '';
+            
             html += `<tr data-id="${estudiante.id}">
                 <td>${estudiante.codigo || ''}</td>
                 <td>${estudiante.nombre || ''}</td>
                 <td>${estudiante.correo || ''}</td>
-                <td>${estudiante.grupo || ''}</td>
                 <td><input type="number" min="0" max="5" step="0.01" value="${estudiante.corte1 || ''}" 
                     onchange="calculadora.actualizarNotaEstudiante('${estudiante.id}', 'corte1', this.value)"
                     class="nota-input"></td>
@@ -487,9 +492,12 @@ class CalculadoraCalificaciones {
                 <td><input type="number" min="0" max="5" step="0.01" value="${estudiante.corte3 || ''}"
                     onchange="calculadora.actualizarNotaEstudiante('${estudiante.id}', 'corte3', this.value)"
                     class="nota-input"></td>
-                <td><input type="number" min="0" max="5" step="0.01" value="${estudiante.bonificacion || ''}"
-                    onchange="calculadora.actualizarNotaEstudiante('${estudiante.id}', 'bonificacion', this.value)"
-                    class="nota-input"></td>
+                <td class="bonificacion-cell">
+                    <input type="number" min="0" max="5" step="0.01" value="${bonificacionNota}" 
+                        id="bonif-${estudiante.id}"
+                        class="nota-input bonif-input" placeholder="0.00">
+                    <button class="btn-guardar-bonif" onclick="calculadora.guardarBonificacion('${estudiante.id}')" title="Guardar bonificación">💾</button>
+                </td>
                 <td>${definitiva.toFixed(2)}</td>
                 <td class="comentarios" title="${estudiante.comentarios || ''}">${estudiante.comentarios ? '📝' : ''}</td>
                 <td>
@@ -867,11 +875,20 @@ class CalculadoraCalificaciones {
             const fila = document.querySelector(`tr[data-id="${id}"]`);
             if (fila) {
                 const { definitiva } = this.calcularDefinitiva(estudiante);
-                const celdaDefinitiva = fila.querySelector('td:nth-child(9)');
+                const celdaDefinitiva = fila.querySelector('td:nth-child(8)');
                 if (celdaDefinitiva) {
                     celdaDefinitiva.textContent = definitiva.toFixed(2);
                 }
             }
+        }
+    }
+    
+    guardarBonificacion(id) {
+        const inputBonif = document.getElementById(`bonif-${id}`);
+        if (inputBonif) {
+            const valor = inputBonif.value;
+            this.actualizarNotaEstudiante(id, 'bonificacion', valor);
+            this.mostrarToast('Bonificación guardada correctamente', 'success');
         }
     }
 
