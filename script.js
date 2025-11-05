@@ -7,9 +7,17 @@ class CalculadoraCalificaciones {
     constructor() {
         this.estudiantes = [];
         this.porcentajes = {
-            corte1: 30,
-            corte2: 30,
-            corte3: 40
+            corte1: 33,
+            corte2: 33,
+            corte3: 34
+        };
+        this.configuracion = {
+            notaAprobacion: 3.0,
+            decimales: 2,
+            temaOscuro: false,
+            autoGuardado: true,
+            vistaDefecto: 'list',
+            notificarRiesgo: true
         };
         this.init();
     }
@@ -23,6 +31,65 @@ class CalculadoraCalificaciones {
         this.cambiarSeccion('estudiantes');
         this.renderizarEstudiantes();
         this.actualizarPorcentajes();
+    }
+
+    // ==========================================
+    // GESTIÓN DE DATOS Y CONFIGURACIÓN
+    // ==========================================
+    
+    aplicarConfiguracion() {
+        // Aplicar tema
+        document.body.classList.toggle('tema-oscuro', this.configuracion.temaOscuro);
+        
+        // Aplicar vista por defecto
+        const filtroVista = document.getElementById('filtro-vista-estudiantes');
+        if (filtroVista) {
+            filtroVista.value = this.configuracion.vistaDefecto;
+        }
+        
+        // Actualizar elementos de configuración
+        document.getElementById('nota-aprobacion').value = this.configuracion.notaAprobacion;
+        document.getElementById('decimales').value = this.configuracion.decimales;
+        document.getElementById('auto-guardado').checked = this.configuracion.autoGuardado;
+        document.getElementById('notificar-riesgo').checked = this.configuracion.notificarRiesgo;
+    }
+    
+    guardarConfiguracion() {
+        try {
+            localStorage.setItem('configuracion', JSON.stringify(this.configuracion));
+            this.mostrarToast('Configuración guardada correctamente', 'success');
+        } catch (error) {
+            console.error('Error al guardar configuración:', error);
+            this.mostrarToast('Error al guardar la configuración', 'error');
+        }
+    }
+
+    cargarConfiguracion() {
+        try {
+            const configGuardada = localStorage.getItem('configuracion');
+            if (configGuardada) {
+                this.configuracion = { ...this.configuracion, ...JSON.parse(configGuardada) };
+            }
+            this.aplicarConfiguracion();
+        } catch (error) {
+            console.error('Error al cargar configuración:', error);
+        }
+    }
+
+    verificarEstudiantesRiesgo() {
+        if (!this.configuracion.notificarRiesgo) return;
+
+        this.estudiantes.forEach(estudiante => {
+            const { definitiva } = this.calcularDefinitiva(estudiante);
+            const estado = this.determinarEstadoEstudiante(estudiante);
+            
+            if (estado === 'reprobado' || (estado === 'en-progreso' && definitiva < 2.0)) {
+                this.mostrarToast(
+                    `¡Alerta! ${estudiante.nombre} está en riesgo académico`,
+                    'warning'
+                );
+            }
+        });
     }
 
     // ==========================================
@@ -62,8 +129,38 @@ class CalculadoraCalificaciones {
     configurarEventListeners() {
         // Navegación entre secciones
         document.getElementById('btn-estudiantes').addEventListener('click', () => this.cambiarSeccion('estudiantes'));
-        document.getElementById('btn-configuracion').addEventListener('click', () => this.cambiarSeccion('configuracion'));
+        document.getElementById('btn-configuracion').addEventListener('click', () => {
+            this.cambiarSeccion('configuracion');
+            this.actualizarInfoSistema();
+        });
         document.getElementById('btn-ayuda').addEventListener('click', () => this.cambiarSeccion('ayuda'));
+
+        // Configuración de respaldos
+        document.getElementById('btn-backup').addEventListener('click', () => this.crearRespaldo());
+        
+        // Drop zone para archivos
+        const dropZone = document.getElementById('drop-zone');
+        if (dropZone) {
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
+            });
+
+            dropZone.addEventListener('dragenter', () => dropZone.classList.add('drag-over'));
+            dropZone.addEventListener('dragover', () => dropZone.classList.add('drag-over'));
+            dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+            dropZone.addEventListener('drop', () => dropZone.classList.remove('drag-over'));
+            
+            dropZone.addEventListener('drop', (e) => {
+                const files = e.dataTransfer.files;
+                if (files.length) {
+                    document.getElementById('archivo-estudiantes').files = files;
+                    this.mostrarVistaPrevia(files[0]);
+                }
+            });
+        }
 
         // Navegación de ayuda
         document.querySelectorAll('.help-nav-btn').forEach(btn => {
@@ -71,7 +168,6 @@ class CalculadoraCalificaciones {
         });
 
         // Modal de estudiante
-        document.getElementById('btn-agregar-estudiante').addEventListener('click', () => this.abrirModalEstudiante());
         document.getElementById('form-estudiante').addEventListener('submit', (e) => this.guardarEstudiante(e));
         document.getElementById('btn-cancelar').addEventListener('click', () => this.cerrarModal());
 
@@ -108,21 +204,34 @@ class CalculadoraCalificaciones {
     // ==========================================
     cambiarSeccion(seccion) {
         // Ocultar todas las secciones
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.section').forEach(s => {
+            s.classList.remove('active');
+            s.hidden = true;
+        });
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.classList.remove('active');
+            btn.setAttribute('aria-selected', 'false');
+        });
 
         // Mostrar sección seleccionada
-        document.getElementById(`seccion-${seccion}`).classList.add('active');
-        document.getElementById(`btn-${seccion}`).classList.add('active');
+        const seccionSeleccionada = document.getElementById(`seccion-${seccion}`);
+        const botonSeleccionado = document.getElementById(`btn-${seccion}`);
+        
+        if (seccionSeleccionada && botonSeleccionado) {
+            seccionSeleccionada.classList.add('active');
+            seccionSeleccionada.hidden = false;
+            botonSeleccionado.classList.add('active');
+            botonSeleccionado.setAttribute('aria-selected', 'true');
 
-        // Acciones específicas por sección
-        if (seccion === 'estudiantes') {
-            this.renderizarEstudiantes();
-        } else if (seccion === 'configuracion') {
-            this.actualizarPorcentajes();
-        } else if (seccion === 'ayuda') {
-            // Mostrar la primera subsección de ayuda por defecto
-            this.cambiarSeccionAyuda('guia-rapida');
+            // Acciones específicas por sección
+            if (seccion === 'estudiantes') {
+                this.renderizarEstudiantes();
+            } else if (seccion === 'configuracion') {
+                this.actualizarPorcentajes();
+            } else if (seccion === 'ayuda') {
+                // Mostrar la primera subsección de ayuda por defecto
+                this.cambiarSeccionAyuda('guia-rapida');
+            }
         }
     }
 
@@ -161,9 +270,13 @@ class CalculadoraCalificaciones {
     llenarFormularioEstudiante(estudiante) {
         document.getElementById('nombre-estudiante').value = estudiante.nombre;
         document.getElementById('codigo-estudiante').value = estudiante.codigo;
+        document.getElementById('correo-estudiante').value = estudiante.correo || '';
+        document.getElementById('grupo-estudiante').value = estudiante.grupo || '';
         document.getElementById('corte1').value = estudiante.corte1 || '';
         document.getElementById('corte2').value = estudiante.corte2 || '';
         document.getElementById('corte3').value = estudiante.corte3 || '';
+        document.getElementById('bonificacion').value = estudiante.bonificacion || '';
+        document.getElementById('comentarios').value = estudiante.comentarios || '';
     }
 
     guardarEstudiante(e) {
@@ -184,9 +297,13 @@ class CalculadoraCalificaciones {
             id: form.dataset.estudianteId || this.generarId(),
             nombre: nombre,
             codigo: codigo,
+            correo: document.getElementById('correo-estudiante').value.trim(),
+            grupo: document.getElementById('grupo-estudiante').value.trim(),
             corte1: this.validarNota(document.getElementById('corte1').value),
             corte2: this.validarNota(document.getElementById('corte2').value),
-            corte3: this.validarNota(document.getElementById('corte3').value)
+            corte3: this.validarNota(document.getElementById('corte3').value),
+            bonificacion: this.validarNota(document.getElementById('bonificacion').value),
+            comentarios: document.getElementById('comentarios').value.trim()
         };
 
         if (form.dataset.estudianteId) {
@@ -312,6 +429,9 @@ class CalculadoraCalificaciones {
             filtroVista.value = modo;
         }
 
+        // Dar foco al tab de estudiantes
+        document.getElementById('btn-estudiantes').focus();
+
         if (this.estudiantes.length === 0) {
             container.innerHTML = `
                 <div class="no-estudiantes">
@@ -332,37 +452,47 @@ class CalculadoraCalificaciones {
     }
 
     crearTablaEstudiantes() {
-        // Encabezados básicos
-        let html = `<table class="tabla-estudiantes">
+        // Crear tabla de estudiantes
+        let html = `
+            <table class="tabla-estudiantes">
             <thead>
                 <tr>
                     <th>Código</th>
                     <th>Nombre</th>
                     <th>Correo</th>
-                    <th>Curso</th>
                     <th>Grupo</th>
-                    <th>Corte 1</th>
-                    <th>Corte 2</th>
-                    <th>Corte 3</th>
+                    <th>Corte 1 (33%)</th>
+                    <th>Corte 2 (33%)</th>
+                    <th>Corte 3 (34%)</th>
+                    <th>Bonificación</th>
                     <th>Definitiva</th>
+                    <th>Comentarios</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>`;
         for (const estudiante of this.estudiantes) {
             const { definitiva } = this.calcularDefinitiva(estudiante);
-            html += `<tr>
+            html += `<tr data-id="${estudiante.id}">
                 <td>${estudiante.codigo || ''}</td>
                 <td>${estudiante.nombre || ''}</td>
                 <td>${estudiante.correo || ''}</td>
-                <td>${estudiante.curso || ''}</td>
                 <td>${estudiante.grupo || ''}</td>
-                <td>${this.formatearNota(estudiante.corte1)}</td>
-                <td>${this.formatearNota(estudiante.corte2)}</td>
-                <td>${this.formatearNota(estudiante.corte3)}</td>
+                <td><input type="number" min="0" max="5" step="0.01" value="${estudiante.corte1 || ''}" 
+                    onchange="calculadora.actualizarNotaEstudiante('${estudiante.id}', 'corte1', this.value)"
+                    class="nota-input"></td>
+                <td><input type="number" min="0" max="5" step="0.01" value="${estudiante.corte2 || ''}"
+                    onchange="calculadora.actualizarNotaEstudiante('${estudiante.id}', 'corte2', this.value)"
+                    class="nota-input"></td>
+                <td><input type="number" min="0" max="5" step="0.01" value="${estudiante.corte3 || ''}"
+                    onchange="calculadora.actualizarNotaEstudiante('${estudiante.id}', 'corte3', this.value)"
+                    class="nota-input"></td>
+                <td><input type="number" min="0" max="5" step="0.01" value="${estudiante.bonificacion || ''}"
+                    onchange="calculadora.actualizarNotaEstudiante('${estudiante.id}', 'bonificacion', this.value)"
+                    class="nota-input"></td>
                 <td>${definitiva.toFixed(2)}</td>
+                <td class="comentarios" title="${estudiante.comentarios || ''}">${estudiante.comentarios ? '📝' : ''}</td>
                 <td>
-                    <button class="btn-icon" onclick='calculadora.abrirModalEstudiante(${JSON.stringify(estudiante).replace(/"/g, "&quot;")})' title="Editar">✏️</button>
                     <button class="btn-icon delete" onclick='calculadora.eliminarEstudiante("${estudiante.id}")' title="Eliminar">🗑️</button>
                 </td>
             </tr>`;
@@ -459,13 +589,38 @@ class CalculadoraCalificaciones {
     }
 
     // ==========================================
-    // CONFIGURACIÓN DE PORCENTAJES
+    // CONFIGURACIÓN DEL SISTEMA
     // ==========================================
     actualizarPorcentajes() {
+        // Cargar porcentajes guardados
         document.getElementById('porcentaje-corte1').value = this.porcentajes.corte1;
         document.getElementById('porcentaje-corte2').value = this.porcentajes.corte2;
         document.getElementById('porcentaje-corte3').value = this.porcentajes.corte3;
+        
+        // Cargar otras configuraciones
+        document.getElementById('nota-aprobacion').value = localStorage.getItem('notaAprobacion') || '3.0';
+        document.getElementById('decimales').value = localStorage.getItem('decimales') || '2';
+        
+        // Actualizar información del sistema
+        this.actualizarInfoSistema();
         this.validarPorcentajes();
+    }
+
+    actualizarInfoSistema() {
+        // Actualizar último respaldo
+        const ultimoRespaldo = localStorage.getItem('ultimoRespaldo');
+        document.getElementById('ultimo-respaldo').textContent = 
+            ultimoRespaldo ? new Date(ultimoRespaldo).toLocaleString() : 'No hay respaldo';
+
+        // Calcular espacio usado
+        const espacioUsado = (
+            new Blob([JSON.stringify(localStorage)]).size / 1024
+        ).toFixed(2);
+        document.getElementById('espacio-usado').textContent = `${espacioUsado} KB`;
+
+        // Mostrar total de estudiantes
+        document.getElementById('total-estudiantes').textContent = 
+            this.estudiantes.length;
     }
 
     validarPorcentajes() {
@@ -475,12 +630,15 @@ class CalculadoraCalificaciones {
         const total = p1 + p2 + p3;
 
         const totalElement = document.getElementById('total-porcentaje');
+        const validationElement = document.getElementById('total-validation');
         totalElement.textContent = total;
         
         if (total === 100) {
             totalElement.style.color = 'var(--color-success)';
+            validationElement.classList.remove('show');
         } else {
             totalElement.style.color = 'var(--color-danger)';
+            validationElement.classList.add('show');
         }
 
         return total === 100;
@@ -503,6 +661,54 @@ class CalculadoraCalificaciones {
         this.guardarDatos();
         this.renderizarEstudiantes();
         this.mostrarToast('Porcentajes actualizados correctamente', 'success');
+    }
+
+    // ==========================================
+    // GESTIÓN DE RESPALDOS Y ARCHIVOS
+    // ==========================================
+    
+    crearRespaldo() {
+        try {
+            const datos = {
+                estudiantes: this.estudiantes,
+                porcentajes: this.porcentajes,
+                configuracion: {
+                    notaAprobacion: parseFloat(document.getElementById('nota-aprobacion').value),
+                    decimales: parseInt(document.getElementById('decimales').value)
+                },
+                fecha: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(datos, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `respaldo_calificaciones_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            
+            localStorage.setItem('ultimoRespaldo', new Date().toISOString());
+            this.actualizarInfoSistema();
+            this.mostrarToast('Respaldo creado correctamente', 'success');
+        } catch (error) {
+            console.error('Error al crear respaldo:', error);
+            this.mostrarToast('Error al crear el respaldo', 'error');
+        }
+    }
+
+    mostrarVistaPrevia(file) {
+        const preview = document.getElementById('upload-preview');
+        const filename = document.getElementById('preview-filename');
+        
+        if (preview && filename) {
+            filename.textContent = file.name;
+            preview.style.display = 'block';
+        }
+        
+        // Configurar botón de cancelar
+        document.getElementById('btn-cancel-upload')?.addEventListener('click', () => {
+            document.getElementById('archivo-estudiantes').value = '';
+            preview.style.display = 'none';
+        });
     }
 
     // ==========================================
@@ -649,6 +855,27 @@ class CalculadoraCalificaciones {
     }
 
     // ==========================================
+    // ACTUALIZACIÓN DE NOTAS
+    // ==========================================
+    actualizarNotaEstudiante(id, campo, valor) {
+        const estudiante = this.estudiantes.find(e => e.id === id);
+        if (estudiante) {
+            estudiante[campo] = this.validarNota(valor);
+            this.guardarDatos();
+            
+            // Actualizar solo la definitiva en la fila
+            const fila = document.querySelector(`tr[data-id="${id}"]`);
+            if (fila) {
+                const { definitiva } = this.calcularDefinitiva(estudiante);
+                const celdaDefinitiva = fila.querySelector('td:nth-child(9)');
+                if (celdaDefinitiva) {
+                    celdaDefinitiva.textContent = definitiva.toFixed(2);
+                }
+            }
+        }
+    }
+
+    // ==========================================
     // VALIDACIONES
     // ==========================================
     validarDatosEstudiante(nombre, codigo, estudianteId) {
@@ -721,6 +948,253 @@ class CalculadoraCalificaciones {
                 }
             });
         });
+    }
+
+    // ==========================================
+    // REPORTES Y ESTADÍSTICAS
+    // ==========================================
+    
+    generarEstadisticas() {
+        const stats = {
+            total: this.estudiantes.length,
+            aprobados: 0,
+            reprobados: 0,
+            enRiesgo: 0,
+            promedioGeneral: 0,
+            mejorPromedio: 0,
+            peorPromedio: 5.0,
+            distribucionNotas: {
+                excelente: 0, // 4.5 - 5.0
+                bueno: 0,     // 4.0 - 4.4
+                aceptable: 0, // 3.0 - 3.9
+                deficiente: 0 // 0.0 - 2.9
+            }
+        };
+
+        let sumaDefinitivas = 0;
+
+        this.estudiantes.forEach(estudiante => {
+            const { definitiva } = this.calcularDefinitiva(estudiante);
+            const estado = this.determinarEstadoEstudiante(estudiante);
+
+            // Actualizar contadores
+            if (estado === 'aprobado') stats.aprobados++;
+            if (estado === 'reprobado') stats.reprobados++;
+            if (estado === 'en-progreso' && definitiva < 2.0) stats.enRiesgo++;
+
+            // Actualizar promedio y extremos
+            sumaDefinitivas += definitiva;
+            stats.mejorPromedio = Math.max(stats.mejorPromedio, definitiva);
+            stats.peorPromedio = Math.min(stats.peorPromedio, definitiva);
+
+            // Clasificar en distribución
+            if (definitiva >= 4.5) stats.distribucionNotas.excelente++;
+            else if (definitiva >= 4.0) stats.distribucionNotas.bueno++;
+            else if (definitiva >= 3.0) stats.distribucionNotas.aceptable++;
+            else stats.distribucionNotas.deficiente++;
+        });
+
+        // Calcular promedio general
+        stats.promedioGeneral = stats.total > 0 ? sumaDefinitivas / stats.total : 0;
+
+        return stats;
+    }
+
+    generarReporteHTML() {
+        const stats = this.generarEstadisticas();
+        return `
+            <div class="reporte-estadisticas">
+                <h3>Resumen Estadístico</h3>
+                
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value">${stats.total}</div>
+                        <div class="stat-label">Total Estudiantes</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${stats.aprobados}</div>
+                        <div class="stat-label">Aprobados</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${stats.reprobados}</div>
+                        <div class="stat-label">Reprobados</div>
+                    </div>
+                    <div class="stat-item warning">
+                        <div class="stat-value">${stats.enRiesgo}</div>
+                        <div class="stat-label">En Riesgo</div>
+                    </div>
+                </div>
+
+                <div class="promedios-section">
+                    <div class="promedio-item">
+                        <span class="label">Promedio General:</span>
+                        <span class="value">${stats.promedioGeneral.toFixed(2)}</span>
+                    </div>
+                    <div class="promedio-item">
+                        <span class="label">Mejor Promedio:</span>
+                        <span class="value">${stats.mejorPromedio.toFixed(2)}</span>
+                    </div>
+                    <div class="promedio-item">
+                        <span class="label">Peor Promedio:</span>
+                        <span class="value">${stats.peorPromedio.toFixed(2)}</span>
+                    </div>
+                </div>
+
+                <div class="distribucion-notas">
+                    <h4>Distribución de Notas</h4>
+                    <div class="barra-distribucion">
+                        <div class="barra excelente" style="width: ${(stats.distribucionNotas.excelente/stats.total*100)||0}%">
+                            <span class="etiqueta">Excelente (${stats.distribucionNotas.excelente})</span>
+                        </div>
+                        <div class="barra bueno" style="width: ${(stats.distribucionNotas.bueno/stats.total*100)||0}%">
+                            <span class="etiqueta">Bueno (${stats.distribucionNotas.bueno})</span>
+                        </div>
+                        <div class="barra aceptable" style="width: ${(stats.distribucionNotas.aceptable/stats.total*100)||0}%">
+                            <span class="etiqueta">Aceptable (${stats.distribucionNotas.aceptable})</span>
+                        </div>
+                        <div class="barra deficiente" style="width: ${(stats.distribucionNotas.deficiente/stats.total*100)||0}%">
+                            <span class="etiqueta">Deficiente (${stats.distribucionNotas.deficiente})</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // ==========================================
+    // EXPORTACIÓN DE REPORTES
+    // ==========================================
+
+    exportarReporteCSV() {
+        const estudiantes = this.estudiantes;
+        const headers = ['Código', 'Nombre', 'Correo', 'Grupo', 'Corte 1', 'Corte 2', 'Corte 3', 'Bonificación', 'Definitiva', 'Estado'];
+        
+        // Crear el contenido CSV
+        let csvContent = headers.join(',') + '\n';
+        
+        estudiantes.forEach(estudiante => {
+            const { definitiva } = this.calcularDefinitiva(estudiante);
+            const estado = this.determinarEstadoEstudiante(estudiante);
+            
+            const row = [
+                estudiante.codigo,
+                estudiante.nombre,
+                estudiante.correo,
+                estudiante.grupo,
+                estudiante.corte1,
+                estudiante.corte2,
+                estudiante.corte3,
+                estudiante.bonificacion,
+                definitiva.toFixed(2),
+                estado
+            ];
+            
+            // Escapar campos que puedan contener comas
+            const escapedRow = row.map(field => {
+                if (field && field.toString().includes(',')) {
+                    return `"${field}"`;
+                }
+                return field;
+            });
+            
+            csvContent += escapedRow.join(',') + '\n';
+        });
+        
+        // Crear blob y descargar
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'reporte_calificaciones.csv');
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    exportarReportePDF() {
+        const stats = this.generarEstadisticas();
+        const estudiantes = this.estudiantes;
+        
+        // Configurar el documento PDF
+        const docDefinition = {
+            content: [
+                { text: 'Reporte de Calificaciones', style: 'header' },
+                { text: new Date().toLocaleDateString(), alignment: 'right', margin: [0, 0, 0, 20] },
+                
+                // Resumen estadístico
+                {
+                    text: 'Resumen Estadístico',
+                    style: 'subheader',
+                    margin: [0, 0, 0, 10]
+                },
+                {
+                    columns: [
+                        [
+                            { text: `Total Estudiantes: ${stats.total}` },
+                            { text: `Aprobados: ${stats.aprobados}` },
+                            { text: `Reprobados: ${stats.reprobados}` }
+                        ],
+                        [
+                            { text: `Promedio General: ${stats.promedioGeneral.toFixed(2)}` },
+                            { text: `Mejor Promedio: ${stats.mejorPromedio.toFixed(2)}` },
+                            { text: `Peor Promedio: ${stats.peorPromedio.toFixed(2)}` }
+                        ]
+                    ],
+                    columnGap: 20,
+                    margin: [0, 0, 0, 20]
+                },
+                
+                // Lista detallada de estudiantes
+                {
+                    text: 'Detalle por Estudiante',
+                    style: 'subheader',
+                    margin: [0, 0, 0, 10]
+                },
+                {
+                    table: {
+                        headerRows: 1,
+                        widths: ['auto', '*', 'auto', 'auto', 'auto', 'auto'],
+                        body: [
+                            ['Código', 'Nombre', 'Definitiva', 'Estado', 'Grupo', 'Correo']
+                        ]
+                    }
+                }
+            ],
+            styles: {
+                header: {
+                    fontSize: 22,
+                    bold: true,
+                    margin: [0, 0, 0, 10]
+                },
+                subheader: {
+                    fontSize: 16,
+                    bold: true,
+                    margin: [0, 10, 0, 5]
+                }
+            },
+            defaultStyle: {
+                fontSize: 10
+            }
+        };
+        
+        // Agregar filas de estudiantes
+        estudiantes.forEach(estudiante => {
+            const { definitiva } = this.calcularDefinitiva(estudiante);
+            const estado = this.determinarEstadoEstudiante(estudiante);
+            
+            docDefinition.content[4].table.body.push([
+                estudiante.codigo,
+                estudiante.nombre,
+                definitiva.toFixed(2),
+                estado,
+                estudiante.grupo,
+                estudiante.correo
+            ]);
+        });
+        
+        // Generar y descargar el PDF
+        pdfMake.createPdf(docDefinition).download('reporte_calificaciones.pdf');
     }
 
     // ==========================================

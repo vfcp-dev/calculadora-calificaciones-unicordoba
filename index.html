@@ -5,30 +5,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora de Calificaciones - Universidad de Córdoba</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles-docs.css">
+    <link rel="stylesheet" href="styles-config.css">
+    <link rel="stylesheet" href="styles-table.css">
     <link rel="icon" href="https://aulasvirtuales.unicordoba.edu.co/pluginfile.php/1/theme_mb2nl/logo/1755638568/unicordoba_logo.png">
 </head>
 <body>
     <!-- Header -->
-    <header class="header">
+    <header class="header" role="banner">
         <div class="header-content">
-            <img src="https://aulasvirtuales.unicordoba.edu.co/pluginfile.php/1/theme_mb2nl/logo/1755638568/unicordoba_logo.png" alt="Universidad de Córdoba" class="logo">
-            <h1>Calculadora de Calificaciones</h1>
+            <div class="header-left">
+                <img src="https://aulasvirtuales.unicordoba.edu.co/pluginfile.php/1/theme_mb2nl/logo/1755638568/unicordoba_logo.png" 
+                     alt="Universidad de Córdoba" 
+                     class="logo" 
+                     width="60" 
+                     height="60">
+                <h1>Seguimiento Estudiantes UNICOR</h1>
+            </div>
         </div>
     </header>
 
     <!-- Navegación -->
-    <nav class="nav-menu">
-        <button id="btn-estudiantes" class="nav-btn active">Estudiantes</button>
-        <button id="btn-configuracion" class="nav-btn">Configuración</button>
-        <button id="btn-ayuda" class="nav-btn">Ayuda</button>
+    <nav class="nav-menu" role="navigation" aria-label="Navegación principal">
+        <div role="tablist" aria-label="Secciones principales">
+            <button id="btn-estudiantes" 
+                    class="nav-btn active" 
+                    role="tab" 
+                    aria-selected="true" 
+                    aria-controls="seccion-estudiantes">
+                <span class="icon">👥</span>
+                Estudiantes
+            </button>
+            <button id="btn-configuracion" 
+                    class="nav-btn" 
+                    role="tab" 
+                    aria-selected="false" 
+                    aria-controls="seccion-configuracion">
+                <span class="icon">⚙️</span>
+                Configuración
+            </button>
+            <button id="btn-ayuda" 
+                    class="nav-btn" 
+                    role="tab" 
+                    aria-selected="false" 
+                    aria-controls="seccion-ayuda">
+                <span class="icon">❔</span>
+                Ayuda
+            </button>
+        </div>
     </nav>
 
     <!-- Sección de Estudiantes -->
-    <section id="seccion-estudiantes" class="section active">
-        <div class="container">
+    <main>
+        <section id="seccion-estudiantes" 
+                class="section active" 
+                role="tabpanel" 
+                aria-labelledby="btn-estudiantes"
+                tabindex="0">
+            <div class="container">
             <div class="section-header">
-                <h2>Gestión de Estudiantes</h2>
-                <button id="btn-agregar-estudiante" class="btn btn-primary">Agregar Estudiante</button>
+                <h2>Curso: 203413 FUNDAMENTOS DE ALGORITMIA<br>Grupo: 2</h2>
             </div>
 
             <!-- Filtro de vista -->
@@ -62,6 +98,14 @@
                             <input type="text" id="codigo-estudiante" required>
                         </div>
                         <div class="form-group">
+                            <label for="correo-estudiante">Correo:</label>
+                            <input type="email" id="correo-estudiante">
+                        </div>
+                        <div class="form-group">
+                            <label for="grupo-estudiante">Grupo:</label>
+                            <input type="text" id="grupo-estudiante">
+                        </div>
+                        <div class="form-group">
                             <label for="corte1">Corte 1 (0-5.0):</label>
                             <input type="number" id="corte1" min="0" max="5" step="0.01" placeholder="0.00">
                         </div>
@@ -72,6 +116,14 @@
                         <div class="form-group">
                             <label for="corte3">Corte 3 (0-5.0):</label>
                             <input type="number" id="corte3" min="0" max="5" step="0.01" placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label for="bonificacion">Bonificación (0-5.0):</label>
+                            <input type="number" id="bonificacion" min="0" max="5" step="0.01" placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label for="comentarios">Comentarios:</label>
+                            <textarea id="comentarios" rows="3" placeholder="Observaciones sobre el estudiante"></textarea>
                         </div>
                         <div class="form-actions">
                             <button type="submit" class="btn btn-primary">Guardar</button>
@@ -84,52 +136,143 @@
     </section>
 
     <!-- Sección de Configuración -->
-    <section id="seccion-configuracion" class="section">
-        <div class="container">
-            <h2>Configuración del Sistema</h2>
+        <section id="seccion-configuracion" 
+                class="section"
+                role="tabpanel" 
+                aria-labelledby="btn-configuracion"
+                tabindex="0">
+            <div class="container">
+            <div class="section-header">
+                <h2>Configuración del Sistema</h2>
+                <button id="btn-backup" class="btn btn-outline">Crear Respaldo</button>
+            </div>
             
             <!-- Configuración de Porcentajes -->
-            <div class="config-card">
-                <h3>Porcentajes de Cortes Académicos</h3>
-                <form id="form-porcentajes">
-                    <div class="form-group">
-                        <label for="porcentaje-corte1">Porcentaje Corte 1 (%):</label>
-                        <input type="number" id="porcentaje-corte1" min="0" max="100" value="30" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="porcentaje-corte2">Porcentaje Corte 2 (%):</label>
-                        <input type="number" id="porcentaje-corte2" min="0" max="100" value="30" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="porcentaje-corte3">Porcentaje Corte 3 (%):</label>
-                        <input type="number" id="porcentaje-corte3" min="0" max="100" value="40" required>
-                    </div>
-                    <div class="total-porcentaje">
-                        Total: <span id="total-porcentaje">100</span>%
-                    </div>
-                    <button type="submit" class="btn btn-primary">Guardar Configuración</button>
-                </form>
+            <div class="config-section">
+                <div class="config-card">
+                    <h3>Porcentajes de Cortes Académicos</h3>
+                    <form id="form-porcentajes">
+                        <div class="form-group">
+                            <label for="porcentaje-corte1">Primer Corte (%):</label>
+                            <input type="number" id="porcentaje-corte1" min="0" max="100" value="30" required>
+                            <div class="form-help">Porcentaje para el primer corte del semestre</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="porcentaje-corte2">Segundo Corte (%):</label>
+                            <input type="number" id="porcentaje-corte2" min="0" max="100" value="30" required>
+                            <div class="form-help">Porcentaje para el segundo corte del semestre</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="porcentaje-corte3">Tercer Corte (%):</label>
+                            <input type="number" id="porcentaje-corte3" min="0" max="100" value="40" required>
+                            <div class="form-help">Porcentaje para el tercer corte del semestre</div>
+                        </div>
+                        <div class="total-porcentaje">
+                            Total: <span id="total-porcentaje">100</span>%
+                            <div class="total-validation" id="total-validation">Los porcentajes deben sumar exactamente 100%</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Guardar Configuración</button>
+                    </form>
+                </div>
+
+                <div class="config-card">
+                    <h3>Configuración de Cálculos</h3>
+                    <form id="form-calculos">
+                        <div class="form-group">
+                            <label for="nota-aprobacion">Nota mínima de aprobación:</label>
+                            <input type="number" id="nota-aprobacion" min="0" max="5" step="0.1" value="3.0">
+                            <div class="form-help">Nota mínima para considerar la materia como aprobada</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="decimales">Decimales en calificaciones:</label>
+                            <select id="decimales">
+                                <option value="1">1 decimal</option>
+                                <option value="2" selected>2 decimales</option>
+                                <option value="3">3 decimales</option>
+                            </select>
+                            <div class="form-help">Número de decimales a mostrar en las calificaciones</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Guardar Preferencias</button>
+                    </form>
+                </div>
             </div>
 
-            <!-- Carga masiva de estudiantes -->
-            <div class="config-card">
-                <h3>Carga Masiva de Estudiantes</h3>
-                <div class="upload-area">
-                    <input type="file" id="archivo-estudiantes" accept=".csv,.xls,.xlsx" style="display: none;">
-                    <button id="btn-cargar-archivo" class="btn btn-secondary">Seleccionar Archivo CSV</button>
-                    <p class="upload-info">Formato: Nombre,Código,Corte1,Corte2,Corte3</p>
+            <!-- Gestión de Datos -->
+            <div class="config-section">
+                <div class="config-card">
+                    <h3>Carga Masiva de Estudiantes</h3>
+                    <div class="upload-area" id="drop-zone">
+                        <div class="upload-icon">📁</div>
+                        <p>Arrastra aquí tu archivo de Excel o</p>
+                        <input type="file" id="archivo-estudiantes" accept=".xls,.xlsx" style="display: none;">
+                        <button id="btn-cargar-archivo" class="btn btn-secondary">Seleccionar archivo</button>
+                        <div class="upload-info">Archivo Excel de Academusoft</div>
+                    </div>
+                    <div class="upload-preview" id="upload-preview" style="display: none;">
+                        <div class="preview-header">
+                            <span class="preview-filename" id="preview-filename">archivo.xlsx</span>
+                            <button class="btn-icon" id="btn-cancel-upload">❌</button>
+                        </div>
+                        <button id="btn-importar" class="btn btn-primary">Procesar Archivo</button>
+                    </div>
                 </div>
-                <div class="form-actions">
-                    <button id="btn-exportar" class="btn btn-outline">Exportar Datos</button>
-                    <button id="btn-limpiar-datos" class="btn btn-danger">Limpiar Todos los Datos</button>
+
+                <div class="config-card">
+                    <h3>Gestión de Datos</h3>
+                    <div class="data-actions">
+                        <div class="action-group">
+                            <button id="btn-exportar" class="btn btn-outline">
+                                <span class="icon">📤</span>
+                                Exportar Datos
+                            </button>
+                            <div class="action-help">Descarga un archivo Excel con todos los datos</div>
+                        </div>
+                        <div class="action-group">
+                            <button id="btn-limpiar-datos" class="btn btn-danger">
+                                <span class="icon">🗑️</span>
+                                Limpiar Datos
+                            </button>
+                            <div class="action-help">Elimina todos los datos (requiere confirmación)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información del Sistema -->
+            <div class="config-section">
+                <div class="config-card system-info">
+                    <h3>Información del Sistema</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Versión:</span>
+                            <span class="info-value">1.0.0</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Último respaldo:</span>
+                            <span class="info-value" id="ultimo-respaldo">No hay respaldo</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Espacio usado:</span>
+                            <span class="info-value" id="espacio-usado">Calculando...</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Estudiantes:</span>
+                            <span class="info-value" id="total-estudiantes">0</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Sección de Ayuda -->
-    <section id="seccion-ayuda" class="section">
-        <div class="container">
+        <section id="seccion-ayuda" 
+                class="section" 
+                role="tabpanel" 
+                aria-labelledby="btn-ayuda"
+                tabindex="0"
+                hidden>
+            <div class="container">
             <h2>Ayuda y Documentación</h2>
 
             <!-- Navegación de ayuda -->
@@ -137,6 +280,7 @@
                 <button class="help-nav-btn active" data-section="guia-rapida">Guía Rápida</button>
                 <button class="help-nav-btn" data-section="manual-tecnico">Manual Técnico</button>
                 <button class="help-nav-btn" data-section="formatos">Formatos</button>
+                <button class="help-nav-btn" data-section="documentacion">Documentación del Código</button>
             </div>
 
             <!-- Guía Rápida -->
@@ -456,90 +600,110 @@
             <!-- Formatos -->
             <div id="help-formatos" class="help-section">
                 <div class="help-card">
-                    <h3>Formato de Archivo CSV</h3>
-                    <p>Para cargar estudiantes masivamente, use un archivo CSV con el siguiente formato:</p>
+                    <h3>Guía de Inicio Rápido</h3>
+                    <p>Sigue estos pasos para comenzar a usar la calculadora:</p>
+                    <ol>
+                        <li><strong>Configurar Porcentajes:</strong>
+                            <ul>
+                                <li>Ve a la sección "Configuración"</li>
+                                <li>Establece los porcentajes de cada corte académico</li>
+                                <li>Asegúrate que sumen 100%</li>
+                            </ul>
+                        </li>
+                        <li><strong>Agregar Estudiantes:</strong>
+                            <ul>
+                                <li>Individual: Usa el botón "Agregar Estudiante"</li>
+                                <li>Masivo: Importa desde archivo Excel</li>
+                            </ul>
+                        </li>
+                        <li><strong>Gestionar Calificaciones:</strong>
+                            <ul>
+                                <li>Haz clic en un estudiante para editar</li>
+                                <li>Ingresa las notas de 0 a 5.0</li>
+                                <li>El sistema calcula automáticamente</li>
+                            </ul>
+                        </li>
+                        <li><strong>Ver Predicciones:</strong>
+                            <ul>
+                                <li>Las predicciones se actualizan automáticamente</li>
+                                <li>Muestra nota necesaria para 2.96 y 5.0</li>
+                            </ul>
+                        </li>
+                    </ol>
+                </div>
+
+                <div class="help-card">
+                    <h3>Formato de Archivo Excel/CSV</h3>
+                    <p>Para cargar estudiantes masivamente, use un archivo Excel con el siguiente formato:</p>
                     <div class="code-block">
                         <code>
-Nombre,Código,Corte1,Corte2,Corte3<br>
-Juan Pérez,123456,4.5,3.8,0<br>
-María García,789012,3.2,4.0,3.5<br>
-Carlos López,345678,2.8,,<br>
-Ana Rodríguez,901234,4.2,3.9,4.1
+TIPO_DOC | NUMERO_DOC | NOMBRES_APELLIDOS | - | CORREO |<br>
+CC       | 123456789 | Juan Pérez López   | - | juan@mail.com<br>
+TI       | 987654321 | Ana Rodríguez     | - | ana@mail.com
                         </code>
                     </div>
                     
                     <h4>Reglas del Formato:</h4>
                     <ul>
-                        <li><strong>Separador:</strong> Coma (,)</li>
-                        <li><strong>Encabezados:</strong> Opcional (primera línea se detecta automáticamente)</li>
-                        <li><strong>Campos vacíos:</strong> Usar campos en blanco para calificaciones no disponibles</li>
-                        <li><strong>Decimales:</strong> Usar punto (.) como separador decimal</li>
-                        <li><strong>Codificación:</strong> UTF-8 recomendado</li>
+                        <li><strong>Excel de Academusoft:</strong> Use el formato oficial de listas</li>
+                        <li><strong>Encabezados:</strong> Mantener la estructura original</li>
+                        <li><strong>Datos obligatorios:</strong> Tipo y número de documento, nombres</li>
+                        <li><strong>Datos opcionales:</strong> Correo electrónico</li>
                     </ul>
                 </div>
 
                 <div class="help-card">
-                    <h3>Estructura de Datos Exportados</h3>
-                    <p>Al exportar, el sistema genera un CSV con información adicional:</p>
-                    <div class="code-block">
-                        <code>
-Nombre,Código,Corte1,Corte2,Corte3,Definitiva,Estado<br>
-Juan Pérez,123456,4.50,3.80,0.00,2.51,reprobado<br>
-María García,789012,3.20,4.00,3.50,3.54,aprobado<br>
-Carlos López,345678,2.80,,,0.84,en-progreso
-                        </code>
-                    </div>
-                </div>
-
-                <div class="help-card">
-                    <h3>Compatibilidad de Navegadores</h3>
-                    <div class="browser-compatibility">
-                        <div class="browser-item">
-                            <span class="browser-name">Chrome</span>
-                            <span class="version-support">✅ 60+</span>
+                    <h3>Interpretación de Estados</h3>
+                    <div class="estados-grid">
+                        <div class="estado-item aprobado">
+                            <h4>🟢 Aprobado</h4>
+                            <p>Definitiva ≥ 3.0</p>
                         </div>
-                        <div class="browser-item">
-                            <span class="browser-name">Firefox</span>
-                            <span class="version-support">✅ 55+</span>
+                        <div class="estado-item reprobado">
+                            <h4>🔴 Reprobado</h4>
+                            <p>Definitiva < 3.0</p>
                         </div>
-                        <div class="browser-item">
-                            <span class="browser-name">Safari</span>
-                            <span class="version-support">✅ 12+</span>
+                        <div class="estado-item inalcanzable">
+                            <h4>⚪ Inalcanzable</h4>
+                            <p>Meta no alcanzable con 5.0</p>
                         </div>
-                        <div class="browser-item">
-                            <span class="browser-name">Edge</span>
-                            <span class="version-support">✅ 79+</span>
-                        </div>
-                        <div class="browser-item">
-                            <span class="browser-name">Internet Explorer</span>
-                            <span class="version-support">❌ No soportado</span>
+                        <div class="estado-item en-progreso">
+                            <h4>🟡 En Progreso</h4>
+                            <p>Con cortes pendientes</p>
                         </div>
                     </div>
                 </div>
 
                 <div class="help-card">
-                    <h3>Instalación y Configuración</h3>
-                    
-                    <h4>Requisitos del Sistema:</h4>
-                    <ul>
-                        <li>Navegador web moderno con JavaScript habilitado</li>
-                        <li>Mínimo 5MB de espacio en LocalStorage</li>
-                        <li>Resolución mínima: 320px de ancho</li>
-                    </ul>
-
-                    <h4>Pasos de Instalación:</h4>
-                    <ol>
-                        <li>Descargar archivos: <code>index.html</code>, <code>styles.css</code>, <code>script.js</code></li>
-                        <li>Colocar todos los archivos en el mismo directorio</li>
-                        <li>Abrir <code>index.html</code> en cualquier navegador</li>
-                        <li>No requiere servidor web (funciona con <code>file://</code>)</li>
-                    </ol>
-
-                    <h4>Configuración Inicial:</h4>
-                    <ul>
-                        <li>Sistema inicia con porcentajes por defecto: 30%, 30%, 40%</li>
-                        <li>Lista de estudiantes vacía</li>
-                        <li>Todas las funcionalidades disponibles inmediatamente</li>
+                    <h3>Atajos de Teclado</h3>
+                    <div class="shortcuts-grid">
+                        <div class="shortcut-item">
+                            <kbd>Ctrl + N</kbd>
+                            <span>Nuevo estudiante</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <kbd>Ctrl + S</kbd>
+                            <span>Guardar cambios</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <kbd>Ctrl + E</kbd>
+                            <span>Exportar datos</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <kbd>Esc</kbd>
+                            <span>Cerrar ventana</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="help-card">
+                    <h3>Contacto y Soporte</h3>
+                    <p>Si necesitas ayuda adicional:</p>
+                    <ul class="support-list">
+                        <li>📧 <strong>Correo:</strong> soporte@unicordoba.edu.co</li>
+                        <li>📱 <strong>Extensión:</strong> 1234</li>
+                        <li>🏢 <strong>Oficina:</strong> Bloque 1, Piso 2</li>
+                        <li>⏰ <strong>Horario:</strong> Lunes a Viernes, 8:00 AM - 5:00 PM</li>
                     </ul>
                 </div>
             </div>

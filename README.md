@@ -20,17 +20,20 @@ Sistema web de gestión académica que permite calcular calificaciones, predecir
 ## 🚀 Instalación y Uso
 
 ### Requisitos
+
 - Navegador web moderno (Chrome 60+, Firefox 55+, Safari 12+, Edge 79+)
 - JavaScript habilitado
 - Mínimo 5MB de LocalStorage disponible
 
 ### Instalación
+
 1. Descarga todos los archivos del repositorio
 2. Coloca los archivos en el mismo directorio
 3. Abre `index.html` en tu navegador
 4. ¡Listo! No requiere servidor web
 
 ### Uso Básico
+
 1. **Configurar porcentajes**: Ve a "Configuración" y establece los porcentajes de cada corte
 2. **Agregar estudiantes**: Usa el botón "Agregar Estudiante" o carga un archivo CSV
 3. **Ver predicciones**: El sistema calcula automáticamente las notas necesarias
@@ -38,14 +41,19 @@ Sistema web de gestión académica que permite calcular calificaciones, predecir
 
 ## 📁 Estructura del Proyecto
 
-```
+FDA/
+├── index.html          # Página principal con estructura HTML
+├── styles.css         # Estilos CSS con tema verde oscuro/blanco
+├── script.js          # Lógica JavaScript completa
+├── SRS.md             # Documentación técnica completa
+└── README.md          # Este archivo
+
 FDA/
 ├── index.html          # Página principal con estructura HTML
 ├── styles.css          # Estilos CSS con tema verde oscuro/blanco
 ├── script.js           # Lógica JavaScript completa
 ├── SRS.md             # Documentación técnica completa
 └── README.md          # Este archivo
-```
 
 ## 🎨 Diseño y Colores
 
@@ -67,10 +75,13 @@ Carlos López,345678,2.8,,
 ## ⚡ Funcionalidades Avanzadas
 
 ### Cálculos Automáticos
+
 - **Definitiva**: `(Corte1 × %1) + (Corte2 × %2) + (Corte3 × %3)`
+- **Nota Necesaria**: `(Objetivo - Acumulado) × 100 / PorcentajeRestante`
 - **Nota Necesaria**: `(Objetivo - Acumulado) × 100 / PorcentajeRestante`
 
 ### Validaciones
+
 - ❌ No permite notas negativas (convierte a 0)
 - ⚠️ Limita notas máximas a 5.0
 - 🔒 Códigos únicos por estudiante
@@ -78,6 +89,7 @@ Carlos López,345678,2.8,,
 - 🚫 Identifica metas inalcanzables
 
 ### Estados del Estudiante
+
 - 🟢 **Aprobado**: Definitiva ≥ 3.0
 - 🔴 **Reprobado**: Definitiva < 3.0
 - ⚪ **Inalcanzable**: Nota necesaria > 5.0
@@ -139,7 +151,8 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 
 ## 👨‍💻 Autor
 
-**Sistema de Calculadora de Calificaciones**
+### Sistema de Calculadora de Calificaciones
+
 - Desarrollado para Universidad de Córdoba
 - Versión: 1.0
 - Fecha: Noviembre 2025

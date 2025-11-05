@@ -1,0 +1,33 @@
+.nota-input {
+    width: 60px;
+    padding: 0.3rem;
+    border: 1px solid var(--color-light-gray);
+    border-radius: var(--border-radius);
+    text-align: center;
+    font-size: 0.9rem;
+    transition: var(--transition);
+}
+
+.nota-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(45, 90, 75, 0.1);
+}
+
+.nota-input:invalid {
+    border-color: var(--color-danger);
+    background-color: #fff5f5;
+}
+
+/* Estilos para la tabla con edición directa */
+.tabla-estudiantes td {
+    padding: 0.5rem;
+    vertical-align: middle;
+}
+
+.tabla-estudiantes td:nth-child(5),
+.tabla-estudiantes td:nth-child(6),
+.tabla-estudiantes td:nth-child(7),
+.tabla-estudiantes td:nth-child(8) {
+    padding: 0.25rem;
+}
