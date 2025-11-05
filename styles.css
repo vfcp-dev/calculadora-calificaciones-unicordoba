@@ -5,6 +5,7 @@
     box-sizing: border-box;
 }
 
+
 :root {
     --color-primary: #2d5a4b;
     --color-primary-light: #3d6b5c;
@@ -22,10 +23,10 @@
     --transition: all 0.3s ease;
 }
 
-/* Estilos generales */
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--color-secondary);
+    background-color: var(--color-light-gray);
     color: var(--color-dark-gray);
     line-height: 1.6;
 }
@@ -34,6 +35,80 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
+}
+
+
+
+/* Filtro de vista */
+.filtro-vista {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+.filtro-vista label {
+    font-weight: 600;
+    color: var(--color-primary);
+}
+.filtro-vista select {
+    padding: 6px 12px;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--color-light-gray);
+    font-size: 1rem;
+}
+
+/* Vista de lista */
+.estudiantes-list {
+    width: 100%;
+    overflow-x: auto;
+    background: var(--color-secondary);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    padding: 0;
+    margin-bottom: 20px;
+}
+.tabla-estudiantes {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1rem;
+    background: var(--color-secondary);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+.tabla-estudiantes th, .tabla-estudiantes td {
+    padding: 10px 8px;
+    border-bottom: 1px solid var(--color-light-gray);
+    text-align: left;
+}
+.tabla-estudiantes th {
+    background: var(--color-primary);
+    color: var(--color-secondary);
+    font-weight: 600;
+    border-bottom: 2px solid var(--color-primary-dark);
+}
+.tabla-estudiantes tr:last-child td {
+    border-bottom: none;
+}
+.tabla-estudiantes tr:hover {
+    background: var(--color-light-gray);
+}
+.tabla-estudiantes td button {
+    margin-right: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-primary);
+    font-size: 1.1rem;
+    border-radius: 50%;
+    transition: var(--transition);
+    padding: 4px 6px;
+}
+.tabla-estudiantes td button.delete {
+    color: var(--color-danger);
+}
+.tabla-estudiantes td button:hover {
+    background: var(--color-light-gray);
+    color: var(--color-primary-dark);
 }
 
 /* Header */

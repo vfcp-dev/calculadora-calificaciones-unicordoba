@@ -31,6 +31,15 @@
                 <button id="btn-agregar-estudiante" class="btn btn-primary">Agregar Estudiante</button>
             </div>
 
+            <!-- Filtro de vista -->
+            <div class="filtro-vista" style="margin-bottom: 10px;">
+                <label for="filtro-vista-estudiantes">Vista:</label>
+                <select id="filtro-vista-estudiantes">
+                    <option value="cards">Tarjetas</option>
+                    <option value="list">Lista</option>
+                </select>
+            </div>
+
             <!-- Lista de Estudiantes -->
             <div id="lista-estudiantes" class="estudiantes-grid">
                 <!-- Los estudiantes se cargarán dinámicamente aquí -->
@@ -106,7 +115,7 @@
             <div class="config-card">
                 <h3>Carga Masiva de Estudiantes</h3>
                 <div class="upload-area">
-                    <input type="file" id="archivo-estudiantes" accept=".csv,.txt" style="display: none;">
+                    <input type="file" id="archivo-estudiantes" accept=".csv,.xls,.xlsx" style="display: none;">
                     <button id="btn-cargar-archivo" class="btn btn-secondary">Seleccionar Archivo CSV</button>
                     <p class="upload-info">Formato: Nombre,Código,Corte1,Corte2,Corte3</p>
                 </div>

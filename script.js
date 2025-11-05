@@ -296,9 +296,22 @@ class CalculadoraCalificaciones {
     // ==========================================
     // RENDERIZADO DE INTERFAZ
     // ==========================================
+
     renderizarEstudiantes() {
         const container = document.getElementById('lista-estudiantes');
-        
+        const filtroVista = document.getElementById('filtro-vista-estudiantes');
+        // Por defecto, mostrar lista si no hay filtro
+        let modo = 'list';
+        if (filtroVista) {
+            modo = filtroVista.value;
+        } else if (container && container.className === 'estudiantes-grid') {
+            modo = 'cards';
+        }
+
+        if (filtroVista && filtroVista.value !== modo) {
+            filtroVista.value = modo;
+        }
+
         if (this.estudiantes.length === 0) {
             container.innerHTML = `
                 <div class="no-estudiantes">
@@ -309,7 +322,70 @@ class CalculadoraCalificaciones {
             return;
         }
 
-        container.innerHTML = this.estudiantes.map(estudiante => this.crearCardEstudiante(estudiante)).join('');
+        if (modo === 'list') {
+            container.className = 'estudiantes-list';
+            container.innerHTML = this.crearTablaEstudiantes();
+        } else {
+            container.className = 'estudiantes-grid';
+            container.innerHTML = this.estudiantes.map(estudiante => this.crearCardEstudiante(estudiante)).join('');
+        }
+    }
+
+    crearTablaEstudiantes() {
+        // Encabezados básicos
+        let html = `<table class="tabla-estudiantes">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>Correo</th>
+                    <th>Curso</th>
+                    <th>Grupo</th>
+                    <th>Corte 1</th>
+                    <th>Corte 2</th>
+                    <th>Corte 3</th>
+                    <th>Definitiva</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>`;
+        for (const estudiante of this.estudiantes) {
+            const { definitiva } = this.calcularDefinitiva(estudiante);
+            html += `<tr>
+                <td>${estudiante.codigo || ''}</td>
+                <td>${estudiante.nombre || ''}</td>
+                <td>${estudiante.correo || ''}</td>
+                <td>${estudiante.curso || ''}</td>
+                <td>${estudiante.grupo || ''}</td>
+                <td>${this.formatearNota(estudiante.corte1)}</td>
+                <td>${this.formatearNota(estudiante.corte2)}</td>
+                <td>${this.formatearNota(estudiante.corte3)}</td>
+                <td>${definitiva.toFixed(2)}</td>
+                <td>
+                    <button class="btn-icon" onclick='calculadora.abrirModalEstudiante(${JSON.stringify(estudiante).replace(/"/g, "&quot;")})' title="Editar">✏️</button>
+                    <button class="btn-icon delete" onclick='calculadora.eliminarEstudiante("${estudiante.id}")' title="Eliminar">🗑️</button>
+                </td>
+            </tr>`;
+        }
+        html += '</tbody></table>';
+        return html;
+    }
+    // ...existing code...
+    // En init, agregar listener para el filtro de vista
+    init() {
+        this.cargarDatos();
+        this.configurarEventListeners();
+        // Establecer la vista por defecto en 'lista'
+        setTimeout(() => {
+            const filtro = document.getElementById('filtro-vista-estudiantes');
+            if (filtro) {
+                filtro.value = 'list';
+                filtro.addEventListener('change', () => this.renderizarEstudiantes());
+            }
+            this.cambiarSeccion('estudiantes');
+            this.renderizarEstudiantes();
+        }, 300);
+        this.actualizarPorcentajes();
     }
 
     crearCardEstudiante(estudiante) {
