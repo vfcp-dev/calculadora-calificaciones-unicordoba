@@ -436,32 +436,86 @@ class CalculadoraCalificaciones {
         const archivo = e.target.files[0];
         if (!archivo) return;
 
-        const reader = new FileReader();
-        reader.onload = (evento) => {
-            try {
-                const contenido = evento.target.result;
-                const lineas = contenido.split('\n').filter(linea => linea.trim());
-                
-                // Saltar la primera línea si es un encabezado
-                const datosLineas = lineas[0].toLowerCase().includes('nombre') ? lineas.slice(1) : lineas;
-                
-                let estudiantesImportados = 0;
-                let errores = 0;
+        const extension = archivo.name.split('.').pop().toLowerCase();
+        if (extension === 'csv' || extension === 'txt') {
+            // Procesar como CSV
+            const reader = new FileReader();
+            reader.onload = (evento) => {
+                try {
+                    const contenido = evento.target.result;
+                    const lineas = contenido.split('\n').filter(linea => linea.trim());
+                    // Saltar la primera línea si es un encabezado
+                    const datosLineas = lineas[0].toLowerCase().includes('nombre') ? lineas.slice(1) : lineas;
+                    let estudiantesImportados = 0;
+                    let errores = 0;
+                    datosLineas.forEach(linea => {
+                        const datos = linea.split(',').map(d => d.trim());
+                        if (datos.length >= 2) {
+                            try {
+                                const estudiante = {
+                                    id: this.generarId(),
+                                    nombre: datos[0],
+                                    codigo: datos[1],
+                                    corte1: this.validarNota(datos[2]),
+                                    corte2: this.validarNota(datos[3]),
+                                    corte3: this.validarNota(datos[4])
+                                };
+                                if (!this.estudiantes.some(e => e.codigo === estudiante.codigo)) {
+                                    this.estudiantes.push(estudiante);
+                                    estudiantesImportados++;
+                                }
+                            } catch (error) {
+                                errores++;
+                            }
+                        }
+                    });
+                    this.guardarDatos();
+                    this.renderizarEstudiantes();
+                    this.mostrarToast(`${estudiantesImportados} estudiantes importados. ${errores} errores.`, 'success');
+                } catch (error) {
+                    this.mostrarToast('Error al procesar el archivo', 'error');
+                }
+            };
+            reader.readAsText(archivo);
+            e.target.value = '';
+        } else if (extension === 'xls' || extension === 'xlsx') {
+            // Procesar como Excel
+            const reader = new FileReader();
+            reader.onload = (evento) => {
+                try {
+                    const data = new Uint8Array(evento.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                    // Leer curso y grupo
+                    const curso = XLSX.utils.encode_cell({ c: 0, r: 2 }); // A3
+                    const grupo = XLSX.utils.encode_cell({ c: 2, r: 2 }); // C3
+                    const nombreCurso = sheet[curso] ? (sheet[curso].v || '').toString().trim() : '';
+                    const nombreGrupo = sheet[grupo] ? (sheet[grupo].v || '').toString().trim() : '';
 
-                datosLineas.forEach(linea => {
-                    const datos = linea.split(',').map(d => d.trim());
-                    if (datos.length >= 2) {
+                    // Buscar inicio del listado (A5)
+                    let fila = 4; // Fila 5 (0-indexed)
+                    let estudiantesImportados = 0;
+                    let errores = 0;
+                    while (true) {
+                        const tipoDoc = sheet[XLSX.utils.encode_cell({ c: 0, r: fila })];
+                        const numeroDoc = sheet[XLSX.utils.encode_cell({ c: 1, r: fila })];
+                        const apellidosNombres = sheet[XLSX.utils.encode_cell({ c: 2, r: fila })];
+                        // Columna 3: guion, Columna 4: correo
+                        const correo = sheet[XLSX.utils.encode_cell({ c: 4, r: fila })];
+                        if (!tipoDoc || !numeroDoc || !apellidosNombres) break; // Fin del listado
                         try {
                             const estudiante = {
                                 id: this.generarId(),
-                                nombre: datos[0],
-                                codigo: datos[1],
-                                corte1: this.validarNota(datos[2]),
-                                corte2: this.validarNota(datos[3]),
-                                corte3: this.validarNota(datos[4])
+                                nombre: (apellidosNombres.v || '').toString().trim(),
+                                codigo: (numeroDoc.v || '').toString().trim(),
+                                tipoDoc: (tipoDoc.v || '').toString().trim(),
+                                correo: correo ? (correo.v || '').toString().trim() : '',
+                                curso: nombreCurso,
+                                grupo: nombreGrupo,
+                                corte1: null,
+                                corte2: null,
+                                corte3: null
                             };
-
-                            // Verificar que no exista el código
                             if (!this.estudiantes.some(e => e.codigo === estudiante.codigo)) {
                                 this.estudiantes.push(estudiante);
                                 estudiantesImportados++;
@@ -469,20 +523,20 @@ class CalculadoraCalificaciones {
                         } catch (error) {
                             errores++;
                         }
+                        fila++;
                     }
-                });
-
-                this.guardarDatos();
-                this.renderizarEstudiantes();
-                this.mostrarToast(`${estudiantesImportados} estudiantes importados. ${errores} errores.`, 'success');
-                
-            } catch (error) {
-                this.mostrarToast('Error al procesar el archivo', 'error');
-            }
-        };
-        
-        reader.readAsText(archivo);
-        e.target.value = ''; // Limpiar el input
+                    this.guardarDatos();
+                    this.renderizarEstudiantes();
+                    this.mostrarToast(`${estudiantesImportados} estudiantes importados de Excel. ${errores} errores.`, 'success');
+                } catch (error) {
+                    this.mostrarToast('Error al procesar el archivo Excel', 'error');
+                }
+            };
+            reader.readAsArrayBuffer(archivo);
+            e.target.value = '';
+        } else {
+            this.mostrarToast('Formato de archivo no soportado. Usa CSV, XLS o XLSX.', 'error');
+        }
     }
 
     exportarDatos() {
