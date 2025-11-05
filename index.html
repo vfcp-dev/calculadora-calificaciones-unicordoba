@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Calificaciones - Universidad de Córdoba</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="https://aulasvirtuales.unicordoba.edu.co/pluginfile.php/1/theme_mb2nl/logo/1755638568/unicordoba_logo.png">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <img src="https://aulasvirtuales.unicordoba.edu.co/pluginfile.php/1/theme_mb2nl/logo/1755638568/unicordoba_logo.png" alt="Universidad de Córdoba" class="logo">
+            <h1>Calculadora de Calificaciones</h1>
+        </div>
+    </header>
+
+    <!-- Navegación -->
+    <nav class="nav-menu">
+        <button id="btn-estudiantes" class="nav-btn active">Estudiantes</button>
+        <button id="btn-configuracion" class="nav-btn">Configuración</button>
+        <button id="btn-ayuda" class="nav-btn">Ayuda</button>
+    </nav>
+
+    <!-- Sección de Estudiantes -->
+    <section id="seccion-estudiantes" class="section active">
+        <div class="container">
+            <div class="section-header">
+                <h2>Gestión de Estudiantes</h2>
+                <button id="btn-agregar-estudiante" class="btn btn-primary">Agregar Estudiante</button>
+            </div>
+
+            <!-- Lista de Estudiantes -->
+            <div id="lista-estudiantes" class="estudiantes-grid">
+                <!-- Los estudiantes se cargarán dinámicamente aquí -->
+            </div>
+
+            <!-- Modal para agregar/editar estudiante -->
+            <div id="modal-estudiante" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 id="modal-titulo">Agregar Estudiante</h3>
+                        <span class="close">&times;</span>
+                    </div>
+                    <form id="form-estudiante">
+                        <div class="form-group">
+                            <label for="nombre-estudiante">Nombre completo:</label>
+                            <input type="text" id="nombre-estudiante" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="codigo-estudiante">Código:</label>
+                            <input type="text" id="codigo-estudiante" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="corte1">Corte 1 (0-5.0):</label>
+                            <input type="number" id="corte1" min="0" max="5" step="0.01" placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label for="corte2">Corte 2 (0-5.0):</label>
+                            <input type="number" id="corte2" min="0" max="5" step="0.01" placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label for="corte3">Corte 3 (0-5.0):</label>
+                            <input type="number" id="corte3" min="0" max="5" step="0.01" placeholder="0.00">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Guardar</button>
+                            <button type="button" class="btn btn-secondary" id="btn-cancelar">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Configuración -->
+    <section id="seccion-configuracion" class="section">
+        <div class="container">
+            <h2>Configuración del Sistema</h2>
+            
+            <!-- Configuración de Porcentajes -->
+            <div class="config-card">
+                <h3>Porcentajes de Cortes Académicos</h3>
+                <form id="form-porcentajes">
+                    <div class="form-group">
+                        <label for="porcentaje-corte1">Porcentaje Corte 1 (%):</label>
+                        <input type="number" id="porcentaje-corte1" min="0" max="100" value="30" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="porcentaje-corte2">Porcentaje Corte 2 (%):</label>
+                        <input type="number" id="porcentaje-corte2" min="0" max="100" value="30" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="porcentaje-corte3">Porcentaje Corte 3 (%):</label>
+                        <input type="number" id="porcentaje-corte3" min="0" max="100" value="40" required>
+                    </div>
+                    <div class="total-porcentaje">
+                        Total: <span id="total-porcentaje">100</span>%
+                    </div>
+                    <button type="submit" class="btn btn-primary">Guardar Configuración</button>
+                </form>
+            </div>
+
+            <!-- Carga masiva de estudiantes -->
+            <div class="config-card">
+                <h3>Carga Masiva de Estudiantes</h3>
+                <div class="upload-area">
+                    <input type="file" id="archivo-estudiantes" accept=".csv,.txt" style="display: none;">
+                    <button id="btn-cargar-archivo" class="btn btn-secondary">Seleccionar Archivo CSV</button>
+                    <p class="upload-info">Formato: Nombre,Código,Corte1,Corte2,Corte3</p>
+                </div>
+                <div class="form-actions">
+                    <button id="btn-exportar" class="btn btn-outline">Exportar Datos</button>
+                    <button id="btn-limpiar-datos" class="btn btn-danger">Limpiar Todos los Datos</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Ayuda -->
+    <section id="seccion-ayuda" class="section">
+        <div class="container">
+            <h2>Ayuda y Documentación</h2>
+
+            <!-- Navegación de ayuda -->
+            <div class="help-nav">
+                <button class="help-nav-btn active" data-section="guia-rapida">Guía Rápida</button>
+                <button class="help-nav-btn" data-section="manual-tecnico">Manual Técnico</button>
+                <button class="help-nav-btn" data-section="formatos">Formatos</button>
+            </div>
+
+            <!-- Guía Rápida -->
+            <div id="help-guia-rapida" class="help-section active">
+                <div class="help-card">
+                    <h3>¿Cómo usar la calculadora?</h3>
+                    <ol>
+                        <li><strong>Configurar porcentajes:</strong> Vaya a la sección "Configuración" y establezca los porcentajes para cada corte académico.</li>
+                        <li><strong>Agregar estudiantes:</strong> En la sección "Estudiantes", haga clic en "Agregar Estudiante" y complete la información.</li>
+                        <li><strong>Calcular notas necesarias:</strong> El sistema automáticamente calculará qué nota necesita en los cortes faltantes para alcanzar 2.96 o 5.0.</li>
+                        <li><strong>Editar calificaciones:</strong> Haga clic en cualquier estudiante para editar sus calificaciones.</li>
+                    </ol>
+                </div>
+
+                <div class="help-card">
+                    <h3>Interpretación de Colores</h3>
+                    <div class="color-legend">
+                        <div class="legend-item">
+                            <div class="color-box aprobado"></div>
+                            <span>Verde: Estudiante aprobado (≥ 3.0)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="color-box reprobado"></div>
+                            <span>Rojo: Estudiante reprobado (< 3.0)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="color-box inalcanzable"></div>
+                            <span>Gris: Calificación inalcanzable</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="help-card">
+                    <h3>Atajos de Teclado</h3>
+                    <div class="shortcuts-grid">
+                        <div class="shortcut-item">
+                            <kbd>Ctrl + N</kbd>
+                            <span>Agregar nuevo estudiante</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <kbd>Ctrl + S</kbd>
+                            <span>Guardar datos</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <kbd>Ctrl + E</kbd>
+                            <span>Exportar datos</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <kbd>Escape</kbd>
+                            <span>Cerrar modal</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manual Técnico -->
+            <div id="help-manual-tecnico" class="help-section">
+                <div class="help-card">
+                    <h3>Manual Técnico - Sistema de Calculadora de Calificaciones</h3>
+                    <p><strong>Universidad de Córdoba | Versión 1.0 | Noviembre 2025</strong></p>
+                </div>
+
+                <div class="help-card">
+                    <h3>1. Descripción General del Sistema</h3>
+                    <p>Sistema web independiente para gestión académica básica, enfocado en el cálculo y predicción de calificaciones estudiantiles. Utiliza LocalStorage para persistencia de datos sin requerir servidor backend.</p>
+                    
+                    <h4>Funciones Principales:</h4>
+                    <ul>
+                        <li>Gestión completa de estudiantes (CRUD)</li>
+                        <li>Configuración de porcentajes académicos</li>
+                        <li>Cálculo automático de definitivas y predicciones</li>
+                        <li>Importación/Exportación de datos CSV</li>
+                        <li>Validaciones en tiempo real</li>
+                    </ul>
+                </div>
+
+                <div class="help-card">
+                    <h3>2. Arquitectura del Sistema</h3>
+                    <h4>Estructura de Archivos:</h4>
+                    <div class="code-block">
+                        <code>
+/FDA/<br>
+├── index.html &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Estructura principal<br>
+├── styles.css &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Estilos y diseño<br>
+└── script.js &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Lógica de aplicación
+                        </code>
+                    </div>
+
+                    <h4>Patrones de Diseño:</h4>
+                    <ul>
+                        <li><strong>Singleton:</strong> Clase CalculadoraCalificaciones única</li>
+                        <li><strong>MVC:</strong> Separación de vista, modelo y controlador</li>
+                        <li><strong>Observer:</strong> Event listeners para interacciones</li>
+                    </ul>
+                </div>
+
+                <div class="help-card">
+                    <h3>3. Flujo de Navegación</h3>
+                    
+                    <h4>Sección Estudiantes:</h4>
+                    <div class="flow-diagram">
+                        <p><strong>Inicio</strong> → Lista de Estudiantes</p>
+                        <ul>
+                            <li><strong>[Agregar]</strong> → Modal Formulario → Validación → Guardar → Lista</li>
+                            <li><strong>[Editar]</strong> → Modal Formulario (pre-lleno) → Actualizar → Lista</li>
+                            <li><strong>[Eliminar]</strong> → Confirmación → Eliminar → Lista</li>
+                            <li><strong>[Ver Predicciones]</strong> → Cálculos automáticos en card</li>
+                        </ul>
+                    </div>
+
+                    <h4>Sección Configuración:</h4>
+                    <div class="flow-diagram">
+                        <ul>
+                            <li><strong>Porcentajes</strong> → Validación suma 100% → Guardar → Recálculo</li>
+                            <li><strong>Carga CSV</strong> → Validación formato → Importar → Lista actualizada</li>
+                            <li><strong>Exportar</strong> → Generar CSV → Descarga</li>
+                            <li><strong>Limpiar</strong> → Confirmación → Borrar todo → Lista vacía</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="help-card">
+                    <h3>4. Algoritmos de Cálculo</h3>
+                    
+                    <h4>Cálculo de Definitiva:</h4>
+                    <div class="formula">
+                        <code>Definitiva = (Corte1 × %1) + (Corte2 × %2) + (Corte3 × %3)</code>
+                    </div>
+
+                    <h4>Predicción de Notas:</h4>
+                    <div class="formula">
+                        <code>Nota Necesaria = (Objetivo - Acumulado) × 100 / PorcentajeRestante</code>
+                    </div>
+
+                    <h4>Estados del Estudiante:</h4>
+                    <ul>
+                        <li><strong>Aprobado:</strong> Definitiva ≥ 3.0</li>
+                        <li><strong>Reprobado:</strong> Definitiva < 3.0 (todos los cortes completos)</li>
+                        <li><strong>Inalcanzable:</strong> Nota necesaria > 5.0</li>
+                        <li><strong>En progreso:</strong> Cortes incompletos, meta alcanzable</li>
+                    </ul>
+                </div>
+
+                <div class="help-card">
+                    <h3>5. Validaciones Implementadas</h3>
+                    
+                    <h4>Validaciones de Entrada:</h4>
+                    <ul>
+                        <li><strong>Nombre:</strong> Mínimo 2 caracteres, no vacío</li>
+                        <li><strong>Código:</strong> Mínimo 3 caracteres, único en el sistema</li>
+                        <li><strong>Calificaciones:</strong> Rango 0-5.0, máximo 2 decimales</li>
+                        <li><strong>Porcentajes:</strong> Números enteros, suma exacta de 100%</li>
+                    </ul>
+
+                    <h4>Validaciones de Negocio:</h4>
+                    <ul>
+                        <li><strong>Notas negativas:</strong> Automáticamente convertidas a 0</li>
+                        <li><strong>Notas > 5.0:</strong> Automáticamente limitadas a 5.0</li>
+                        <li><strong>Divisiones por cero:</strong> Manejadas en cálculos</li>
+                        <li><strong>Metas inalcanzables:</strong> Identificadas y marcadas</li>
+                    </ul>
+                </div>
+
+                <div class="help-card">
+                    <h3>6. Persistencia de Datos</h3>
+                    
+                    <h4>Estructura en LocalStorage:</h4>
+                    <div class="code-block">
+                        <code>
+{<br>
+&nbsp;&nbsp;"estudiantes": [<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id": "string",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"nombre": "string",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"codigo": "string",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"corte1": number|null,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"corte2": number|null,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"corte3": number|null<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;],<br>
+&nbsp;&nbsp;"porcentajes": {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"corte1": number,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"corte2": number,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"corte3": number<br>
+&nbsp;&nbsp;}<br>
+}
+                        </code>
+                    </div>
+
+                    <h4>Operaciones de Persistencia:</h4>
+                    <ul>
+                        <li><strong>Auto-guardado:</strong> Después de cada operación</li>
+                        <li><strong>Carga inicial:</strong> Al iniciar la aplicación</li>
+                        <li><strong>Manejo de errores:</strong> Validación de quota y parsing</li>
+                        <li><strong>Backup preventivo:</strong> Antes de operaciones destructivas</li>
+                    </ul>
+                </div>
+
+                <div class="help-card">
+                    <h3>7. Componentes de Interfaz</h3>
+                    
+                    <h4>Sistema de Colores:</h4>
+                    <div class="color-system">
+                        <div class="color-item">
+                            <div class="color-sample" style="background: #2d5a4b;"></div>
+                            <span><strong>Verde Oscuro (#2d5a4b):</strong> Color principal, headers</span>
+                        </div>
+                        <div class="color-item">
+                            <div class="color-sample" style="background: #28a745;"></div>
+                            <span><strong>Verde Éxito (#28a745):</strong> Estudiantes aprobados</span>
+                        </div>
+                        <div class="color-item">
+                            <div class="color-sample" style="background: #dc3545;"></div>
+                            <span><strong>Rojo Peligro (#dc3545):</strong> Estudiantes reprobados</span>
+                        </div>
+                        <div class="color-item">
+                            <div class="color-sample" style="background: #6c757d;"></div>
+                            <span><strong>Gris Neutro (#6c757d):</strong> Estados inalcanzables</span>
+                        </div>
+                    </div>
+
+                    <h4>Responsive Design:</h4>
+                    <ul>
+                        <li><strong>768px y menor:</strong> Grid de una columna, navegación vertical</li>
+                        <li><strong>480px y menor:</strong> Botones más grandes, modales fullscreen</li>
+                        <li><strong>Adaptaciones móviles:</strong> Touch-friendly, texto legible</li>
+                    </ul>
+                </div>
+
+                <div class="help-card">
+                    <h3>8. Manejo de Errores</h3>
+                    
+                    <h4>Tipos de Error:</h4>
+                    <ul>
+                        <li><strong>Usuario:</strong> Campos vacíos, datos inválidos</li>
+                        <li><strong>Sistema:</strong> LocalStorage lleno, archivos corruptos</li>
+                        <li><strong>Compatibilidad:</strong> JavaScript deshabilitado</li>
+                    </ul>
+
+                    <h4>Estrategias de Recuperación:</h4>
+                    <ul>
+                        <li><strong>Validación preventiva:</strong> Evita estados inválidos</li>
+                        <li><strong>Mensajes informativos:</strong> Guían hacia la solución</li>
+                        <li><strong>Fallbacks:</strong> Valores por defecto seguros</li>
+                        <li><strong>Auto-corrección:</strong> Para rangos numéricos</li>
+                    </ul>
+                </div>
+
+                <div class="help-card">
+                    <h3>9. Rendimiento y Escalabilidad</h3>
+                    
+                    <h4>Métricas de Rendimiento:</h4>
+                    <ul>
+                        <li><strong>Carga inicial:</strong> < 3 segundos</li>
+                        <li><strong>Operaciones locales:</strong> < 100ms</li>
+                        <li><strong>Capacidad:</strong> Hasta 500 estudiantes</li>
+                        <li><strong>Memoria:</strong> Uso eficiente del navegador</li>
+                    </ul>
+
+                    <h4>Limitaciones Actuales:</h4>
+                    <ul>
+                        <li><strong>LocalStorage:</strong> ~5-10MB según navegador</li>
+                        <li><strong>Sin sincronización:</strong> Solo local por dispositivo</li>
+                        <li><strong>Sin backup automático:</strong> Depende del usuario</li>
+                    </ul>
+                </div>
+
+                <div class="help-card">
+                    <h3>10. Casos de Uso Técnicos</h3>
+                    
+                    <h4>Agregar Estudiante (Flujo Completo):</h4>
+                    <ol>
+                        <li>Usuario hace click en "Agregar Estudiante"</li>
+                        <li>Sistema abre modal con formulario vacío</li>
+                        <li>Validación en tiempo real durante escritura</li>
+                        <li>Al enviar: validación final y verificación de unicidad</li>
+                        <li>Creación de objeto estudiante con ID único</li>
+                        <li>Adición al array y persistencia en LocalStorage</li>
+                        <li>Re-renderizado de la lista con animación</li>
+                        <li>Cierre de modal y mensaje de confirmación</li>
+                    </ol>
+
+                    <h4>Cálculo de Predicciones:</h4>
+                    <ol>
+                        <li>Sistema detecta cortes registrados vs faltantes</li>
+                        <li>Calcula acumulado actual con porcentajes</li>
+                        <li>Determina porcentaje restante disponible</li>
+                        <li>Aplica fórmula para objetivos 2.96 y 5.0</li>
+                        <li>Valida si es alcanzable (≤ 5.0)</li>
+                        <li>Actualiza interfaz con colores apropiados</li>
+                    </ol>
+                </div>
+
+                <div class="help-card">
+                    <h3>11. Futuras Mejoras</h3>
+                    
+                    <h4>Mejoras de Funcionalidad:</h4>
+                    <ul>
+                        <li>Sincronización con servicios en la nube</li>
+                        <li>Reportes gráficos y estadísticas avanzadas</li>
+                        <li>Gestión de múltiples materias simultáneas</li>
+                        <li>Integración con sistemas académicos existentes</li>
+                        <li>Notificaciones automáticas de riesgo académico</li>
+                    </ul>
+
+                    <h4>Mejoras Técnicas:</h4>
+                    <ul>
+                        <li>Migración a base de datos real (PostgreSQL/MySQL)</li>
+                        <li>API REST para operaciones remotas</li>
+                        <li>Autenticación y autorización de usuarios</li>
+                        <li>Versionado de datos y respaldos automáticos</li>
+                        <li>PWA (Progressive Web App) para instalación</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Formatos -->
+            <div id="help-formatos" class="help-section">
+                <div class="help-card">
+                    <h3>Formato de Archivo CSV</h3>
+                    <p>Para cargar estudiantes masivamente, use un archivo CSV con el siguiente formato:</p>
+                    <div class="code-block">
+                        <code>
+Nombre,Código,Corte1,Corte2,Corte3<br>
+Juan Pérez,123456,4.5,3.8,0<br>
+María García,789012,3.2,4.0,3.5<br>
+Carlos López,345678,2.8,,<br>
+Ana Rodríguez,901234,4.2,3.9,4.1
+                        </code>
+                    </div>
+                    
+                    <h4>Reglas del Formato:</h4>
+                    <ul>
+                        <li><strong>Separador:</strong> Coma (,)</li>
+                        <li><strong>Encabezados:</strong> Opcional (primera línea se detecta automáticamente)</li>
+                        <li><strong>Campos vacíos:</strong> Usar campos en blanco para calificaciones no disponibles</li>
+                        <li><strong>Decimales:</strong> Usar punto (.) como separador decimal</li>
+                        <li><strong>Codificación:</strong> UTF-8 recomendado</li>
+                    </ul>
+                </div>
+
+                <div class="help-card">
+                    <h3>Estructura de Datos Exportados</h3>
+                    <p>Al exportar, el sistema genera un CSV con información adicional:</p>
+                    <div class="code-block">
+                        <code>
+Nombre,Código,Corte1,Corte2,Corte3,Definitiva,Estado<br>
+Juan Pérez,123456,4.50,3.80,0.00,2.51,reprobado<br>
+María García,789012,3.20,4.00,3.50,3.54,aprobado<br>
+Carlos López,345678,2.80,,,0.84,en-progreso
+                        </code>
+                    </div>
+                </div>
+
+                <div class="help-card">
+                    <h3>Compatibilidad de Navegadores</h3>
+                    <div class="browser-compatibility">
+                        <div class="browser-item">
+                            <span class="browser-name">Chrome</span>
+                            <span class="version-support">✅ 60+</span>
+                        </div>
+                        <div class="browser-item">
+                            <span class="browser-name">Firefox</span>
+                            <span class="version-support">✅ 55+</span>
+                        </div>
+                        <div class="browser-item">
+                            <span class="browser-name">Safari</span>
+                            <span class="version-support">✅ 12+</span>
+                        </div>
+                        <div class="browser-item">
+                            <span class="browser-name">Edge</span>
+                            <span class="version-support">✅ 79+</span>
+                        </div>
+                        <div class="browser-item">
+                            <span class="browser-name">Internet Explorer</span>
+                            <span class="version-support">❌ No soportado</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="help-card">
+                    <h3>Instalación y Configuración</h3>
+                    
+                    <h4>Requisitos del Sistema:</h4>
+                    <ul>
+                        <li>Navegador web moderno con JavaScript habilitado</li>
+                        <li>Mínimo 5MB de espacio en LocalStorage</li>
+                        <li>Resolución mínima: 320px de ancho</li>
+                    </ul>
+
+                    <h4>Pasos de Instalación:</h4>
+                    <ol>
+                        <li>Descargar archivos: <code>index.html</code>, <code>styles.css</code>, <code>script.js</code></li>
+                        <li>Colocar todos los archivos en el mismo directorio</li>
+                        <li>Abrir <code>index.html</code> en cualquier navegador</li>
+                        <li>No requiere servidor web (funciona con <code>file://</code>)</li>
+                    </ol>
+
+                    <h4>Configuración Inicial:</h4>
+                    <ul>
+                        <li>Sistema inicia con porcentajes por defecto: 30%, 30%, 40%</li>
+                        <li>Lista de estudiantes vacía</li>
+                        <li>Todas las funcionalidades disponibles inmediatamente</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Toast para notificaciones -->
+    <div id="toast" class="toast"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
